@@ -57,16 +57,22 @@ def _load_index() -> None:
 
     with open(CONNECTIONS_FILE, "r", encoding="utf-8") as f:
 
-        offset = 0
+        while True:
 
-        for line in f:
+            offset = f.tell()   # ✅ take offset BEFORE reading line
+
+            line = f.readline()
+
+            if not line:
+                break
+
             try:
                 record = json.loads(line)
-                _index[record["connection_id"]] = offset
+                conn_id = record["connection_id"]
+                _index[conn_id] = offset
+
             except Exception:
                 pass
-
-            offset = f.tell()
 
     _index_loaded = True
 
