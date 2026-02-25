@@ -238,11 +238,11 @@ The system is designed to separate policy evaluation from AI anomaly scoring to 
 
 Key design decisions:
 
-• Policies are evaluated synchronously for immediate allow/block decisions without invoking AI scoring unnecessarily.
-• AI scoring is handled asynchronously via a queue and background worker to prevent blocking incoming requests.
-• Redis is used as a cache layer to store anomaly scores and reduce repeated model evaluations.
-• A TokenBucket rate limiter ensures the AI scoring service respects the hard limit of 100 requests/sec.
-• Connection and policy storage are separated to allow independent scaling and clean architecture boundaries.
+- Policies are evaluated synchronously for immediate allow/block decisions without invoking AI scoring unnecessarily.
+- AI scoring is handled asynchronously via a queue and background worker to prevent blocking incoming requests.
+- Redis is used as a cache layer to store anomaly scores and reduce repeated model evaluations.
+- A TokenBucket rate limiter ensures the AI scoring service respects the hard limit of 100 requests/sec.
+- Connection and policy storage are separated to allow independent scaling and clean architecture boundaries.
 
 This architecture allows the system to handle burst traffic up to 1000 requests/sec while respecting AI scoring constraints.
 
@@ -256,9 +256,9 @@ The model evaluates connection features and produces an anomaly score, which is 
 
 The score is used to determine the final decision:
 
-• score > 0.8 → block
-• score 0.5–0.8 → alert
-• score < 0.5 → allow (if no blocking policy exists)
+- score > 0.8 → block
+- score 0.5–0.8 → alert
+- score < 0.5 → allow (if no blocking policy exists)
 
 To ensure scalability, anomaly scoring is performed asynchronously using a background worker and cached in Redis to avoid repeated evaluations.
 
@@ -268,16 +268,16 @@ To ensure scalability, anomaly scoring is performed asynchronously using a backg
 
 Current limitations:
 
-• Connection and policy storage use in-memory storage and Redis instead of a persistent database.
-• The IsolationForest model is trained on simulated data and not production network traffic.
-• The system runs as a single instance and does not include horizontal scaling.
+- Connection and policy storage use in-memory storage and Redis instead of a persistent database.
+- The IsolationForest model is trained on simulated data and not production network traffic.
+- The system runs as a single instance and does not include horizontal scaling.
 
 Future improvements:
 
-• Replace in-memory storage with a persistent database such as PostgreSQL.
-• Deploy multiple worker instances behind a distributed queue for higher throughput.
-• Add monitoring, metrics, and alerting for production environments.
-• Support model retraining and versioning.
-• Deploy using Docker and Kubernetes for production scalability.
+- Replace in-memory storage with a persistent database such as PostgreSQL.
+- Deploy multiple worker instances behind a distributed queue for higher throughput.
+- Add monitoring, metrics, and alerting for production environments.
+- Support model retraining and versioning.
+- Deploy using Docker and Kubernetes for production scalability.
 
 ---
