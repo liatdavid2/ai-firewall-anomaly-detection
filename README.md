@@ -156,7 +156,7 @@ Enables policy evaluation and allows retrieving decisions via the API.
 ### 1. Create a virtual environment
 
 ```cmd
-python -m venv venv
+py -m venv .venv
 ```
 
 ---
@@ -164,7 +164,7 @@ python -m venv venv
 ### 2. Activate the virtual environment
 
 ```cmd
-venv\Scripts\activate
+.venv\Scripts\activate
 ```
 
 ---
