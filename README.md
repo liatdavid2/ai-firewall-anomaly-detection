@@ -417,7 +417,7 @@ Explanation:
 
 ---
 
-````markdown
+
 ## Traffic Profile and Scalability
 
 The system is designed to meet the required traffic and AI scoring constraints.
@@ -430,7 +430,8 @@ Example run:
 
 ```bash
 python scripts\load_test.py
-````
+```
+
 
 Example results:
 
