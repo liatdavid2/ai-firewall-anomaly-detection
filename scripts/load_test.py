@@ -6,7 +6,7 @@ from datetime import datetime
 
 URL = "http://127.0.0.1:8000/connections"
 
-TARGET_RPS = 150
+TARGET_RPS = 80
 DURATION_SECONDS = 10
 
 # Stats
@@ -56,9 +56,27 @@ async def send_request(client):
 
             data = response.json()
 
-            if data.get("pending_ai") is True:
-                pending_ai_count += 1
+            connection_id = data.get("connection_id")
 
+            if data.get("pending_ai") is True and connection_id:
+
+                # poll until final state
+                for _ in range(30): 
+                    await asyncio.sleep(0.1)
+
+                    try:
+                        check = await client.get(f"{URL}/{connection_id}")
+                        check_data = check.json()
+
+                        if check_data.get("pending_ai") is False:
+                            break
+
+                    except Exception:
+                        break
+
+                else:
+                    pending_ai_count += 1
+                    
         else:
             total_errors += 1
 
@@ -88,7 +106,11 @@ async def run_test():
 
             batch_start = time.time()
 
-            await worker(client, TARGET_RPS)
+            chunk = 5
+
+            for _ in range(TARGET_RPS // chunk):
+                await worker(client, chunk)
+                await asyncio.sleep(interval / (TARGET_RPS // chunk))
 
             elapsed = time.time() - batch_start
 

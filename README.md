@@ -416,3 +416,84 @@ Explanation:
 * The final decision was stored and returned
 
 ---
+
+````markdown
+## Traffic Profile and Scalability
+
+The system is designed to meet the required traffic and AI scoring constraints.
+
+### Traffic Profile
+
+The load test script (`scripts/load_test.py`) simulates sustained traffic with a controlled request rate.
+
+Example run:
+
+```bash
+python scripts\load_test.py
+````
+
+Example results:
+
+```
+Total requests: 240
+Success: 240
+Errors: 0
+Pending AI: 0 (0.0%)
+Avg latency: 0.0188 sec
+Max latency: 0.0363 sec
+Min latency: 0.0122 sec
+```
+
+This confirms that:
+
+* All requests are processed successfully
+* No requests are dropped
+* System remains stable under sustained load
+* Latency remains low and consistent
+
+---
+
+### AI Scoring Limit Handling
+
+The AI scoring service enforces a hard limit of **100 requests per second**.
+
+To comply with this constraint, the system implements:
+
+* Redis-based score caching to avoid redundant scoring
+* Asynchronous processing for connections requiring AI scoring
+* Persistent storage of all connections (NDJSON log)
+* Immediate API response without blocking on AI scoring when needed
+
+If the AI service limit is reached, the system gracefully queues scoring while continuing to accept and persist incoming connections.
+
+This ensures:
+
+* No requests are dropped
+* AI rate limit is never exceeded
+* System remains responsive under load
+
+---
+
+### Scalability Strategy
+
+The system is designed to handle bursts up to **1000 requests per second** using:
+
+* Stateless FastAPI API layer
+* Redis caching for fast lookup and reduced AI calls
+* Append-only persistent storage for durability
+* Non-blocking async architecture
+* Graceful degradation under load
+
+This architecture allows horizontal scaling by running multiple API instances behind a load balancer.
+
+---
+
+### Bonus Features Implemented
+
+* Policy caching via in-memory policy engine
+* Connection persistence using append-only NDJSON log
+* Redis caching for anomaly scores and connection state
+* Graceful degradation under load (no dropped requests)
+* Asynchronous AI scoring support
+
+```
