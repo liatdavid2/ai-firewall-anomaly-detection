@@ -9,6 +9,7 @@ from app.services.anomaly_service import score_connection
 from app.services.storage import update_connection_decision, get_connection_by_id
 from app.services.policy_engine import find_matching_policy
 from app.core.decision import decide
+from app.services.redis_cache import cache_connection
 
 
 # ============================================================
@@ -132,12 +133,19 @@ def _worker_loop() -> None:
 
             final_decision = decide(policy, score)
 
-            update_connection_decision(
+            updated = update_connection_decision(
                 connection_id=connection_id,
                 decision=final_decision,
                 anomaly_score=score,
                 pending_ai=False
             )
+
+            # update Redis cache
+            try:
+                import asyncio
+                asyncio.run(cache_connection(updated))
+            except Exception:
+                pass
 
         finally:
 

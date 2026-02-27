@@ -281,3 +281,138 @@ Future improvements:
 - Deploy using Docker and Kubernetes for production scalability.
 
 ---
+
+## Example Requests (CMD / curl)
+
+These examples demonstrate policy creation, connection submission, and AI-based anomaly detection.
+
+---
+
+### 1. Create Policy
+
+Create a security policy that blocks traffic from a specific source IP to destination port 443.
+
+```cmd
+curl -X POST http://127.0.0.1:8000/policies ^
+-H "Content-Type: application/json" ^
+-d "{\"policy_id\":\"P-002\",\"conditions\":[{\"field\":\"destination_port\",\"operator\":\"==\",\"value\":\"443\"},{\"field\":\"source_ip\",\"operator\":\"==\",\"value\":\"192.168.1.10\"}],\"action\":\"block\"}"
+```
+
+Response:
+
+```json
+{"message":"policy created"}
+```
+
+---
+
+### 2. Update Policy
+
+Update an existing policy.
+
+```cmd
+curl -X PUT http://127.0.0.1:8000/policies/P-002 ^
+-H "Content-Type: application/json" ^
+-d "{\"conditions\":[{\"field\":\"destination_port\",\"operator\":\"==\",\"value\":\"443\"},{\"field\":\"source_ip\",\"operator\":\"==\",\"value\":\"192.168.1.10\"}],\"action\":\"block\"}"
+```
+
+Response:
+
+```json
+{"message":"policy updated"}
+```
+
+---
+
+### 3. Submit Connection – Policy Match Case
+
+Submit a connection that matches the policy. The decision is applied immediately without AI scoring.
+
+```cmd
+curl -X POST http://127.0.0.1:8000/connections ^
+-H "Content-Type: application/json" ^
+-d "{\"source_ip\":\"192.168.1.10\",\"destination_ip\":\"10.0.0.5\",\"destination_port\":443,\"protocol\":\"TCP\",\"timestamp\":\"2025-04-30T12:34:56Z\"}"
+```
+
+Response:
+
+```json
+{
+  "connection_id":"aad6ede9-a86a-4a9e-b1fa-1dd4a20e2bf9",
+  "decision":"block",
+  "anomaly_score":null,
+  "matched_policy":"P-TEST",
+  "pending_ai":false
+}
+```
+
+Explanation:
+
+* The connection matched an existing policy
+* The connection was blocked immediately
+* No AI scoring was required
+
+---
+
+### 4. Submit Connection – AI Scoring Case
+
+Submit a connection that does not match any policy. The connection is sent for asynchronous AI scoring.
+
+```cmd
+curl -X POST http://127.0.0.1:8000/connections ^
+-H "Content-Type: application/json" ^
+-d "{\"source_ip\":\"1.1.1.1\",\"destination_ip\":\"8.8.8.8\",\"destination_port\":8888,\"protocol\":\"TCP\",\"timestamp\":\"2025-04-30T12:40:00Z\"}"
+```
+
+Immediate Response:
+
+```json
+{
+  "connection_id":"ea462f7a-c9ad-4ec8-a15b-9c647c1a0fc0",
+  "decision":"alert",
+  "anomaly_score":null,
+  "matched_policy":null,
+  "pending_ai":true
+}
+```
+
+Explanation:
+
+* No policy matched
+* The connection was submitted for background AI scoring
+* The API returned immediately
+
+---
+
+### 5. Retrieve Connection Decision After AI Scoring
+
+Retrieve the final decision after AI processing completes.
+
+```cmd
+curl http://127.0.0.1:8000/connections/ea462f7a-c9ad-4ec8-a15b-9c647c1a0fc0
+```
+
+Response:
+
+```json
+{
+  "connection_id":"ea462f7a-c9ad-4ec8-a15b-9c647c1a0fc0",
+  "decision":"alert",
+  "anomaly_score":0.5405642501558188,
+  "matched_policy":null,
+  "pending_ai":false,
+  "source_ip":"1.1.1.1",
+  "destination_ip":"8.8.8.8",
+  "destination_port":8888,
+  "protocol":"TCP",
+  "timestamp":"2025-04-30 12:40:00+00:00"
+}
+```
+
+Explanation:
+
+* AI scoring completed successfully
+* anomaly_score was calculated
+* The final decision was stored and returned
+
+---
