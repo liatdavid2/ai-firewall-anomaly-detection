@@ -416,8 +416,6 @@ Explanation:
 * The final decision was stored and returned
 
 ---
-
-
 ## Traffic Profile and Scalability
 
 The system is designed to meet the required traffic and AI scoring constraints.
@@ -428,7 +426,7 @@ The load test script (`scripts/load_test.py`) simulates sustained traffic with a
 
 Example run:
 
-```bash
+```cmd
 python scripts\load_test.py
 ```
 
@@ -496,5 +494,3 @@ This architecture allows horizontal scaling by running multiple API instances be
 * Redis caching for anomaly scores and connection state
 * Graceful degradation under load (no dropped requests)
 * Asynchronous AI scoring support
-
-```
