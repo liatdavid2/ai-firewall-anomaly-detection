@@ -415,7 +415,6 @@ Explanation:
 * anomaly_score was calculated
 * The final decision was stored and returned
 
----
 ## Traffic Profile and Scalability
 
 The system is designed to meet the required traffic and AI scoring constraints.
