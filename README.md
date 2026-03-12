@@ -486,7 +486,7 @@ This architecture allows horizontal scaling by running multiple API instances be
 
 ---
 
-### Bonus Features Implemented
+### Extra Features Implemented
 
 * Policy caching via in-memory policy engine
 * Connection persistence using append-only NDJSON log
